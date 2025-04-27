@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BBC</title>
+    <link rel="icon" href="d7.png">
+    <style>
+        @font-face {
+            font-family: 'Magic';
+            src: url('Magic.ttf') format('truetype');
+        }
+        
+        @font-face {
+            font-family: 'Wizzta';
+            src: url('wizzta.ttf') format('truetype');
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+        }
+        
+        h1 {
+            font-family: 'Magic', fantasy;
+            font-size: 3rem;
+            color: #f9f9f9;
+            text-shadow: 0 0 10px #9d4edd, 0 0 20px #7b2cbf, 0 0 30px #5a189a;
+            margin-bottom: 50px;
+        }
+        
+        .scene {
+            width: 300px;
+            height: 300px;
+            perspective: 800px;
+            position: relative;
+            margin: 0 auto;
+            cursor: pointer;
+        }
+        
+        .sphere-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        /* 3D Sphere made of many planes */
+        .sphere {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+            transform: rotateY(0deg);
+        }
+        
+        .face {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            margin: -150px 0 0 -150px;
+            background-color: rgba(235, 118, 35, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            box-shadow: inset 0 0 30px rgba(255, 255, 255, 0.2);
+            backface-visibility: visible;
+            transform-style: preserve-3d;
+        }
+        
+        /* Basketball seams overlay */
+        .basketball-seams {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: 
+                linear-gradient(0deg, transparent 48%, black 49%, black 51%, transparent 52%) no-repeat,
+                linear-gradient(90deg, transparent 48%, black 49%, black 51%, transparent 52%) no-repeat,
+                radial-gradient(circle at center, rgba(235, 118, 35, 0.8) 40%, rgba(235, 118, 35, 0.5) 60%);
+            opacity: 0.8;
+            pointer-events: none;
+            transform: translateZ(5px);
+            animation: rotateSeams 10s linear infinite;
+        }
+        
+        /* Curved seams as pseudo-elements */
+        .basketball-seams::before,
+        .basketball-seams::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: black;
+            border-bottom-color: black;
+            opacity: 0.5;
+        }
+        
+        .basketball-seams::before {
+            transform: rotateX(66deg);
+        }
+        
+        .basketball-seams::after {
+            transform: rotateX(-66deg);
+        }
+        
+        /* Crystal ball glow effect */
+        .crystal-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, 
+                rgba(255, 255, 255, 0.3), 
+                rgba(70, 130, 180, 0.1) 40%, 
+                rgba(148, 0, 211, 0.2) 80%);
+            pointer-events: none;
+            opacity: 0.6;
+            animation: pulse 5s infinite alternate;
+        }
+        
+        /* Light reflection */
+        .reflection {
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 30%;
+            height: 20%;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, 
+                rgba(255, 255, 255, 0.5), 
+                rgba(255, 255, 255, 0) 70%);
+            transform: rotateZ(-20deg) rotateX(60deg);
+            filter: blur(5px);
+            pointer-events: none;
+        }
+        
+        .shadow {
+            position: absolute;
+            bottom: -40px;
+            left: 10%;
+            width: 80%;
+            height: 20px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            filter: blur(10px);
+            z-index: -1;
+        }
+        
+        .fortune {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) translateZ(50px) scale(0);
+            width: 80%;
+            font-family: 'Wizzta', cursive;
+            font-size: 1.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px #9d4edd;
+            opacity: 0;
+            transition: all 0.5s ease;
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+        }
+        
+        .fortune.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateZ(50px) scale(1);
+        }
+        
+        .sparkles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 10;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            animation: twinkle 2s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.4; }
+            100% { opacity: 0.7; }
+        }
+        
+        @keyframes rotateSeams {
+            0% { transform: translateZ(5px) rotateY(0deg); }
+            100% { transform: translateZ(5px) rotateY(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+            
+            .scene {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .face {
+                width: 250px;
+                height: 250px;
+                margin: -125px 0 0 -125px;
+            }
+            
+            .fortune {
+                font-size: 1.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+            }
+            
+            .scene {
+                width: 200px;
+                height: 200px;
+            }
+            
+            .face {
+                width: 200px;
+                height: 200px;
+                margin: -100px 0 0 -100px;
+            }
+            
+            .fortune {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Basketball Baba Crystal Ball</h1>
+        
+        <div class="scene" id="basketballScene">
+            <div class="sphere-container" id="sphereContainer">
+                <div class="sphere" id="basketball">
+                    <!-- Faces will be added by JavaScript -->
+                </div>
+                <div class="basketball-seams" id="basketballSeams"></div>
+                <div class="crystal-glow"></div>
+                <div class="reflection"></div>
+                <div class="fortune" id="fortune"></div>
+            </div>
+            <div class="shadow"></div>
+            <div class="sparkles" id="sparkles"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const basketball = document.getElementById('basketball');
+            const fortune = document.getElementById('fortune');
+            const sparkles = document.getElementById('sparkles');
+            const basketballScene = document.getElementById('basketballScene');
+            const sphereContainer = document.getElementById('sphereContainer');
+            const basketballSeams = document.getElementById('basketballSeams');
+            
+            let isAnimating = false;
+            let rotationX = 0;
+            let rotationY = 0;
+            let rotationZ = 0;
+            
+            // Create a more realistic 3D sphere with multiple faces
+            const numFaces = 20; // Number of faces to create a convincing 3D sphere
+            
+            for (let i = 0; i < numFaces; i++) {
+                // Create vertical sections
+                const verticalAngle = (i / numFaces) * Math.PI;
+                const radius = 150 * Math.sin(verticalAngle);
+                const y = 150 * Math.cos(verticalAngle);
+                
+                for (let j = 0; j < numFaces; j++) {
+                    // Create horizontal sections
+                    const horizontalAngle = (j / numFaces) * 2 * Math.PI;
+                    const x = radius * Math.cos(horizontalAngle);
+                    const z = radius * Math.sin(horizontalAngle);
+                    
+                    // Opacity based on position (more translucent at edges)
+                    const distanceFromCenter = Math.sqrt(x*x + y*y + z*z);
+                    const opacity = Math.max(0.2, 1 - (distanceFromCenter / 150) * 0.8);
+                    
+                    // Size of each face (smaller faces create smoother sphere)
+                    const size = 300 / (numFaces / 2);
+                    
+                    const face = document.createElement('div');
+                    face.className = 'face';
+                    face.style.width = size + 'px';
+                    face.style.height = size + 'px';
+                    face.style.margin = `-${size/2}px 0 0 -${size/2}px`;
+                    face.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateX(${verticalAngle * 180 / Math.PI}deg) rotateY(${horizontalAngle * 180 / Math.PI}deg)`;
+                    face.style.opacity = opacity;
+                    face.style.backgroundColor = `rgba(235, 118, 35, ${opacity * 0.7})`;
+                    
+                    basketball.appendChild(face);
+                }
+            }
+            
+            // Create sparkles
+            for (let i = 0; i < 30; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.classList.add('sparkle');
+                sparkle.style.left = `${Math.random() * 100}%`;
+                sparkle.style.top = `${Math.random() * 100}%`;
+                sparkle.style.animationDelay = `${Math.random() * 2}s`;
+                sparkles.appendChild(sparkle);
+            }
+            
+            // Basketball rotation animation
+            let animationId;
+            
+            function rotateSphere() {
+                rotationY += 1.2; // Main rotation speed
+                rotationX = 10 + Math.sin(Date.now() / 1000) * 5; // Slight wobble
+                rotationZ += 0.3; // Add some spin on Z axis for more realism
+                
+                // Apply rotation to sphere container (containing all sphere elements)
+                sphereContainer.style.transform = `rotateX(${rotationX}deg) rotateY(${rotationY}deg) rotateZ(${rotationZ}deg)`;
+                
+                animationId = requestAnimationFrame(rotateSphere);
+            }
+            
+            rotateSphere();
+            
+            // Click event for the basketball crystal ball
+            basketballScene.addEventListener('click', function() {
+                if (isAnimating) return;
+                isAnimating = true;
+                
+                // Hide any existing fortune
+                fortune.classList.remove('visible');
+                
+                // Cancel regular rotation animation
+                cancelAnimationFrame(animationId);
+                
+                // Chaotic basketball spin animation
+                let frames = 0;
+                const totalFrames = 90; // Longer animation
+                const initialRotationX = rotationX;
+                const initialRotationY = rotationY;
+                const initialRotationZ = rotationZ;
+                
+                function animateClick() {
+                    frames++;
+                    
+                    if (frames <= totalFrames) {
+                        // Create chaotic basketball-like movement
+                        const progress = frames / totalFrames;
+                        const ease = 1 - Math.pow(1 - progress, 3); // Cubic ease out
+                        
+                        // More extreme motion
+                        const chaosAmplitude = 50 * Math.sin(progress * Math.PI);
+                        
+                        // Fast spinning with wobble like a real basketball
+                        rotationX = initialRotationX + chaosAmplitude * Math.sin(progress * 15);
+                        rotationY = initialRotationY + 1080 * ease; // Three full rotations
+                        rotationZ = initialRotationZ + chaosAmplitude * Math.cos(progress * 12);
+                        
+                        // Add bouncing motion
+                        const bounceY = Math.sin(progress * Math.PI * 3) * 30;
+                        const swayX = Math.sin(progress * Math.PI * 4) * 20;
+                        
+                        sphereContainer.style.transform = `
+                            translate3d(${swayX}px, ${bounceY}px, 0)
+                            rotateX(${rotationX}deg) 
+                            rotateY(${rotationY}deg) 
+                            rotateZ(${rotationZ}deg)
+                        `;
+                        
+                        requestAnimationFrame(animateClick);
+                    } else {
+                        // Animation complete, fetch and display fortune
+                        sparkles.style.opacity = '1';
+                        fetchFortune();
+                        
+                        // Reset translation but keep final rotation
+                        setTimeout(() => {
+                            sphereContainer.style.transform = `
+                                rotateX(${rotationX}deg) 
+                                rotateY(${rotationY}deg) 
+                                rotateZ(${rotationZ}deg)
+                            `;
+                            
+                            // Resume normal rotation
+                            rotateSphere();
+                        }, 500);
+                    }
+                }
+                
+                animateClick();
+            });
+            
+            // Fetch fortune from the backend
+            function fetchFortune() {
+                fetch('/random_joke')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Display the fortune
+                        fortune.textContent = data.joke;
+                        fortune.classList.add('visible');
+                        
+                        // Reset animation state after a delay
+                        setTimeout(() => {
+                            sparkles.style.opacity = '0';
+                            isAnimating = false;
+                        }, 5000);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        fortune.textContent = "The crystal ball is cloudy... Try again later.";
+                        fortune.classList.add('visible');
+                        isAnimating = false;
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
